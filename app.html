@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Drive System Portal</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      background-color: #f4f4f9;
+      margin: 0;
+    }
+    .container {
+      width: 80%;
+      max-width: 600px;
+      padding: 20px;
+      background-color: #fff;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      text-align: center;
+    }
+    .drop-zone {
+      padding: 40px;
+      border: 2px dashed #007bff;
+      border-radius: 10px;
+      color: #666;
+      margin-top: 20px;
+      font-size: 1.2em;
+      cursor: pointer;
+    }
+    .drop-zone.dragging {
+      background-color: #007bff;
+      color: #fff;
+    }
+    .output {
+      margin-top: 20px;
+    }
+    .output p {
+      margin: 10px 0;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      background-color: #fafafa;
+    }
+    .success {
+      color: green;
+    }
+    .fail {
+      color: red;
+    }
+    .file-input {
+      display: none;
+    }
+    .button-container {
+      margin-top: 20px;
+      display: flex;
+      justify-content: space-around;
+    }
+    .button-container button {
+      padding: 10px 20px;
+      font-size: 1em;
+      color: #fff;
+      background-color: #007bff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .button-container button:disabled {
+      background-color: #cccccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Smart Drive System Portal</h2>
+  <p>Drag and drop files here based on your current city location or click to select files.</p>
+  <div class="drop-zone" id="dropZone">
+    Drop files here
+  </div>
+  <input type="file" id="fileInput" class="file-input" multiple>
+  
+  <div class="button-container">
+    <button onclick="triggerFileInput()">Select Files</button>
+    <button id="submitButton" onclick="submitFiles()" disabled>Submit</button>
+  </div>
+  
+  <div class="output" id="output"></div>
+</div>
+
+<script>
+  const dropZone = document.getElementById('dropZone');
+  const output = document.getElementById('output');
+  const fileInput = document.getElementById('fileInput');
+  const submitButton = document.getElementById('submitButton');
+  const knownCities = ['Vancouver', 'Surrey', 'Victoria', 'Burnaby', 'Coquitlam'];
+  let filesToUpload = [];
+
+  // Simulated function to get current location (replace with real location data)
+  function getLocationCity() {
+    const randomCity = "Victoria"
+    return randomCity;
+  }
+
+  // Handle Dragging events
+  dropZone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropZone.classList.add('dragging');
+  });
+
+  dropZone.addEventListener('dragleave', () => {
+    dropZone.classList.remove('dragging');
+  });
+
+  dropZone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropZone.classList.remove('dragging');
+    filesToUpload = Array.from(e.dataTransfer.files);
+    submitButton.disabled = false;
+    displaySelectedFiles();
+  });
+
+  // Open file system when clicking on drop zone
+  dropZone.addEventListener('click', triggerFileInput);
+
+  // Handle file input manually selected by the user
+  fileInput.addEventListener('change', (e) => {
+    filesToUpload = Array.from(e.target.files);
+    submitButton.disabled = false;
+    displaySelectedFiles();
+  });
+
+  function triggerFileInput() {
+    fileInput.click();
+  }
+
+  function displaySelectedFiles() {
+    output.innerHTML = '';
+    filesToUpload.forEach(file => {
+      output.innerHTML += `<p>Selected <strong>${file.name}</strong> (${(file.size / 1024).toFixed(2)} KB)</p>`;
+    });
+  }
+
+  function submitFiles() {
+    const city = getLocationCity();
+    filesToUpload.forEach(file => {
+      if (knownCities.includes(city)) {
+        output.innerHTML += `<p class="success">Uploaded <strong>${file.name}</strong> to folder "<strong>${city}</strong>".</p>`;
+      } else {
+        const newCity = prompt(`Location ${city} not recognized. Please enter a new city name:`);
+        if (newCity) {
+          output.innerHTML += `<p class="success">Uploaded <strong>${file.name}</strong> to folder "<strong>${newCity}</strong>".</p>`;
+          knownCities.push(newCity); // Add to known cities
+        } else {
+          output.innerHTML += `<p class="fail">Failed to upload <strong>${file.name}</strong>. Location not provided.</p>`;
+        }
+      }
+    });
+    filesToUpload = []; // Clear the files after submission
+    submitButton.disabled = true;
+  }
+</script>
+
+</body>
+</html>
