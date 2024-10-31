@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Location-Based Smart Drive</title>
+    <link rel="stylesheet" href="static/style.css">
+</head>
+<body>
+    <h1>Location-Based Smart Drive - Admin Page</h1>
+
+    <div class="container">
+        <h2>Manage Location Folders</h2>
+        <form id="folderForm">
+            <input type="text" id="cityName" placeholder="Enter City Name" required>
+            <button type="submit">Create Folder</button>
+        </form>
+
+        <div id="folderList">
+            <h3>Existing Folders</h3>
+            <ul id="folders"></ul>
+        </div>
+    </div>
+
+    <script>
+        // Fetch folders from the server
+        async function loadFolders() {
+            const response = await fetch('/folders');
+            const folders = await response.json();
+            const folderList = document.getElementById('folders');
+            folderList.innerHTML = '';
+
+            folders.forEach(folder => {
+                const li = document.createElement('li');
+                li.textContent = folder;
+                folderList.appendChild(li);
+            });
+        }
+
+        // Handle form submission to create a folder
+        document.getElementById('folderForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const cityName = document.getElementById('cityName').value;
+
+            const response = await fetch('/create-folder', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ cityName })
+            });
+
+            if (response.ok) {
+                alert('Folder created successfully!');
+                document.getElementById('cityName').value = '';
+                loadFolders();
+            } else {
+                alert('Error creating folder');
+            }
+        });
+
+        // Load folders on page load
+        loadFolders();
+    </script>
+</body>
+</html>
